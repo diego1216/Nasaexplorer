@@ -34,7 +34,7 @@ export const HomeScreen = ({ navigation }: Props) => {
   };
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Button title="Seleccionar Fecha" onPress={() => setShowPicker(true)} />
+      <Button title="Ver Eventos Naturales" onPress={() => navigation.navigate('Eonet')} />
       <Button title="Ver Asteroides Cercanos" onPress={() => navigation.navigate('Asteroids')}/>
 
       {showPicker && (
