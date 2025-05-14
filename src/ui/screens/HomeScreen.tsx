@@ -34,8 +34,6 @@ export const HomeScreen = ({ navigation }: Props) => {
   };
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Button title="Ver Eventos Naturales" onPress={() => navigation.navigate('Eonet')} />
-      <Button title="Ver Asteroides Cercanos" onPress={() => navigation.navigate('Asteroids')}/>
 
       {showPicker && (
         <DateTimePicker
@@ -73,6 +71,15 @@ export const HomeScreen = ({ navigation }: Props) => {
           <Text style={styles.date}>{picture.date}</Text>
         </>
       )}
+      <View style={styles.button}>
+         <Button title="Ver Eventos Naturales" onPress={() => navigation.navigate('Eonet')} />
+      </View>
+      <View style={styles.button}>
+         <Button title="Ver Asteroides Cercanos" onPress={() => navigation.navigate('Asteroids')} />
+      </View>
+      <View style={styles.button}>
+         <Button title="Ver Eventos DONKI" onPress={() => navigation.navigate('Donki')} />
+       </View>
     </ScrollView>
   );
 };
@@ -82,6 +89,7 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#f1f5f9",
     flexGrow: 1,
+    
   },
   center: {
     flex: 1,
@@ -95,23 +103,33 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     color: "#1e293b",
   },
+
+    button: {
+    marginBottom: 10, // Espacio entre botones
+    alignSelf: "center", 
+    width: "20%",
+    borderRadius:20,
+  },
+
   image: {
-    width: "100%",
+    width: "70%",
     height: 300,
     borderRadius: 8,
-    marginBottom: 12,
+    alignSelf: "center", 
+    marginBottom: 20,
   },
   webview: {
     height: 300,
     width: width - 32,
     borderRadius: 8,
-    marginBottom: 12,
+    marginBottom: 20,
   },
   explanation: {
     fontSize: 16,
     color: "#334155",
+    gap:10,
     lineHeight: 22,
-    marginBottom: 20,
+    marginBottom: 50,
   },
   date: {
     textAlign: "right",
