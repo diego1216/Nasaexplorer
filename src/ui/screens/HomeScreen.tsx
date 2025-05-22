@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from 'react'; // Importa React y el hook useEffect
 import {
   ScrollView,
   View,
@@ -7,45 +7,49 @@ import {
   Image,
   Platform,
   Pressable,
-} from 'react-native';
-import { WebView } from 'react-native-webview';
+} from 'react-native'; // Importa componentes nativos de React Native
+import { WebView } from 'react-native-webview'; // Importa componente para mostrar contenido web
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
   withTiming,
-} from 'react-native-reanimated';
-import useApodViewModel from '../../presentation/viewmodels/useApodViewModel';
-import { useNavigation } from '@react-navigation/native';
-import type { StackNavigationProp } from '@react-navigation/stack';
-import type { RootStackParamList } from '../../navigation/AppNavigator';
+} from 'react-native-reanimated'; // Importa funciones y hooks de animación
+import useApodViewModel from '../../presentation/viewmodels/useApodViewModel'; // Hook personalizado que obtiene la imagen del día (APOD)
+import { useNavigation } from '@react-navigation/native'; // Hook para navegación
+import type { DrawerNavigationProp } from '@react-navigation/drawer'; // Tipado para navegación tipo drawer
+import type { DrawerParamList } from '../../navigation/DrawerNavigator'; // Importa tipo de rutas del drawer
 
-type NavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
+// Define el tipo de navegación basado en el drawer
+type NavigationProp = DrawerNavigationProp<DrawerParamList>;
 
 export default function HomeScreen() {
-  const { data, loading, error } = useApodViewModel();
-  const navigation = useNavigation<NavigationProp>();
+  const { data, loading, error } = useApodViewModel(); // Usa el ViewModel para obtener estado de APOD
+  const navigation = useNavigation<NavigationProp>(); // Hook para navegar a otras pantallas
 
-  // 🔵 Zoom animación al cargar pantalla
+  // Valores compartidos para animación inicial de toda la pantalla
   const zoom = useSharedValue(0.8);
   const opacity = useSharedValue(0);
 
+  // Estilo animado que se aplicará a la ScrollView principal
   const screenStyle = useAnimatedStyle(() => ({
     transform: [{ scale: zoom.value }],
     opacity: opacity.value,
   }));
 
+  // Efecto de entrada que anima la escala y opacidad
   useEffect(() => {
     zoom.value = withSpring(1);
     opacity.value = withTiming(1, { duration: 300 });
   }, []);
 
-  // 🔵 Animaciones para botones
+  // Valores compartidos para animación de botones
   const scaleEonet = useSharedValue(1);
   const scaleAsteroids = useSharedValue(1);
   const scaleDonki = useSharedValue(1);
   const scaleLibrary = useSharedValue(1);
 
+  // Estilos animados individuales por botón
   const styleEonet = useAnimatedStyle(() => ({ transform: [{ scale: scaleEonet.value }] }));
   const styleAsteroids = useAnimatedStyle(() => ({ transform: [{ scale: scaleAsteroids.value }] }));
   const styleDonki = useAnimatedStyle(() => ({ transform: [{ scale: scaleDonki.value }] }));
@@ -53,16 +57,16 @@ export default function HomeScreen() {
 
   return (
     <Animated.ScrollView contentContainerStyle={styles.container} style={screenStyle}>
-      {loading && <Text style={styles.title}>Cargando...</Text>}
-      {error && <Text style={styles.title}>Error: {error}</Text>}
+      {loading && <Text style={styles.title}>Cargando...</Text>} // Muestra mensaje de carga
+      {error && <Text style={styles.title}>Error: {error}</Text>} // Muestra error si existe
 
-      {data.map((item, index) => (
+      {data.map((item, index) => ( // Itera sobre las imágenes del día (puede ser una o más)
         <View key={index}>
           <Text style={styles.title}>{item.title}</Text>
 
-          {item.media_type === 'image' ? (
+          {item.media_type === 'image' ? ( // Muestra una imagen si el tipo es imagen
             <Image source={{ uri: item.url }} style={styles.image} resizeMode="contain" />
-          ) : Platform.OS === 'web' ? (
+          ) : Platform.OS === 'web' ? ( // Si es video y está en la web, muestra iframe
             <View style={styles.webview}>
               <iframe
                 width="100%"
@@ -74,16 +78,16 @@ export default function HomeScreen() {
                 allowFullScreen
               />
             </View>
-          ) : (
+          ) : ( // Si es video y no es web, usa WebView
             <WebView source={{ uri: item.url }} style={styles.webview} />
           )}
 
-          <Text style={styles.explanation}>{item.explanation}</Text>
-          <Text style={styles.date}>{item.date}</Text>
+          <Text style={styles.explanation}>{item.explanation}</Text> // Muestra la explicación
+          <Text style={styles.date}>{item.date}</Text> // Muestra la fecha
         </View>
       ))}
 
-      {/* Botones animados */}
+      {/* Botón animado para navegar a EONET */}
       <Pressable
         onPressIn={() => (scaleEonet.value = withSpring(1.1))}
         onPressOut={() => (scaleEonet.value = withSpring(1))}
@@ -94,6 +98,7 @@ export default function HomeScreen() {
         </Animated.View>
       </Pressable>
 
+      {/* Botón animado para navegar a Asteroids */}
       <Pressable
         onPressIn={() => (scaleAsteroids.value = withSpring(1.1))}
         onPressOut={() => (scaleAsteroids.value = withSpring(1))}
@@ -104,6 +109,7 @@ export default function HomeScreen() {
         </Animated.View>
       </Pressable>
 
+      {/* Botón animado para navegar a DONKI */}
       <Pressable
         onPressIn={() => (scaleDonki.value = withSpring(1.1))}
         onPressOut={() => (scaleDonki.value = withSpring(1))}
@@ -114,6 +120,7 @@ export default function HomeScreen() {
         </Animated.View>
       </Pressable>
 
+      {/* Botón animado para navegar a la biblioteca de imágenes */}
       <Pressable
         onPressIn={() => (scaleLibrary.value = withSpring(1.1))}
         onPressOut={() => (scaleLibrary.value = withSpring(1))}
@@ -127,11 +134,12 @@ export default function HomeScreen() {
   );
 }
 
+// Define los estilos del componente
 const styles = StyleSheet.create({
   container: {
     padding: 16,
     backgroundColor: "#f1f5f9",
-    flexGrow: 1,
+    flexGrow: 1, // Hace que ScrollView ocupe todo el espacio disponible
   },
   title: {
     fontSize: 22,

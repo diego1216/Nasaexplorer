@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react'; // Importa React y el hook useEffect
 import {
   View,
   Text,
@@ -9,84 +9,94 @@ import {
   Pressable,
   TextInput,
   Button,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { StackNavigationProp } from '@react-navigation/stack';
-import type { RootStackParamList } from '../../navigation/AppNavigator';
-import { NasaMediaDatasource } from '../../data/datasources/NasaMediaDatasource';
+  Dimensions,
+} from 'react-native'; // Importa componentes nativos de React Native
+import { useNavigation } from '@react-navigation/native'; // Hook de navegación
+import { useAppDispatch, useAppSelector } from '../../redux/store'; // Hooks tipados de Redux
+import {
+  fetchImages,     // Acción para obtener imágenes desde la API o caché
+  setQuery,        // Acción para establecer el texto de búsqueda
+  setPage,         // Acción para controlar la paginación
+} from '../../redux/slices/imageLibrarySlice'; // Acciones del slice de Image Library
+import type { StackNavigationProp } from '@react-navigation/stack'; // Tipado para navegación de pila
+import type { RootStackParamList } from '../../navigation/AppNavigator'; // Tipado de las rutas del stack
+
+// Calcula el tamaño de cada imagen según el ancho de pantalla
+const screenWidth = Dimensions.get('window').width;
+const imageSize = (screenWidth - 48) / 2;
 
 const ImageLibraryScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const [query, setQuery] = useState('');
-  const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>(); // Hook para navegación
+  const dispatch = useAppDispatch(); // Hook para disparar acciones de Redux
 
-  const fetchImages = async (reset = false) => {
-    try {
-      if (reset) {
-        setPage(1);
-        setImages([]);
-      }
-      setLoading(reset);
-      setLoadingMore(!reset);
+  // Obtiene el estado actual del slice imageLibrary
+  const { images, loading, error, loadingMore, query, page, hasMore } = useAppSelector(
+    (state) => state.imageLibrary
+  );
 
-      const data = await new NasaMediaDatasource().search(query, reset ? 1 : page);
-      setImages(prev => (reset ? data : [...prev, ...data]));
-      setPage(prev => prev + 1);
-    } catch (err) {
-      setError('Error al buscar imágenes');
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
+  // Efecto que se dispara cuando se cambia la página o el query
+  useEffect(() => {
+    dispatch(fetchImages());
+  }, [dispatch, page, query]);
+
+  // Función para ejecutar búsqueda
+  const handleSearch = () => {
+    if (query.trim()) {
+      dispatch(setPage(1));       // Reinicia a la primera página
+      dispatch(fetchImages());    // Ejecuta la búsqueda
     }
   };
 
-  const handleSearch = () => {
-    if (query.trim() !== '') {
-      fetchImages(true);
+  // Función para cargar más imágenes al llegar al final de la lista
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      dispatch(setPage(page + 1)); // Avanza una página
     }
   };
 
   return (
     <View style={{ flex: 1 }}>
-      {/* 🔍 Buscador */}
+      {/* Barra de búsqueda */}
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar imágenes (ej: Mars, Earth, Saturn)"
           value={query}
-          onChangeText={setQuery}
-          onSubmitEditing={handleSearch}
+          onChangeText={(text) => dispatch(setQuery(text))}
+          onSubmitEditing={handleSearch} // Ejecuta búsqueda al presionar Enter
         />
-        <Button title="Buscar" onPress={handleSearch} />
+        <Button title="Buscar" onPress={handleSearch} /> {/* Botón de búsqueda */}
       </View>
 
+      {/* Indicador de carga */}
       {loading && (
         <View style={styles.center}>
           <ActivityIndicator size="large" color="#0077ff" />
         </View>
       )}
 
+      {/* Muestra mensaje de error si lo hay */}
       {error && (
         <View style={styles.center}>
           <Text style={styles.error}>{error}</Text>
         </View>
       )}
 
+      {/* Lista de resultados */}
       <FlatList
-        data={images}
-        keyExtractor={(_, index) => index.toString()}
-        contentContainerStyle={styles.container}
-        onEndReached={() => fetchImages()}
-        onEndReachedThreshold={0.7}
+        data={images} // Datos a renderizar
+        keyExtractor={(_, index) => index.toString()} // Clave única por índice
+        numColumns={2} // Dos columnas por fila
+        contentContainerStyle={styles.container} // Estilo del contenido
+        columnWrapperStyle={styles.row} // Estilo de las filas
+        onEndReached={handleLoadMore} // Ejecuta cuando se alcanza el final del scroll
+        onEndReachedThreshold={0.7} // Umbral para anticipar la carga
         ListFooterComponent={
           loadingMore ? <ActivityIndicator size="small" color="#0077ff" /> : null
         }
         renderItem={({ item }) => (
           <Pressable
+            style={styles.card}
             onPress={() =>
               navigation.navigate('ImageDetail', {
                 imageUrl: item.imageUrl,
@@ -95,10 +105,8 @@ const ImageLibraryScreen = () => {
               })
             }
           >
-            <View style={styles.card}>
-              <Image source={{ uri: item.imageUrl }} style={styles.image} />
-              <Text style={styles.title}>{item.title}</Text>
-            </View>
+            <Image source={{ uri: item.imageUrl }} style={styles.image} />
+            <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
           </Pressable>
         )}
       />
@@ -106,10 +114,15 @@ const ImageLibraryScreen = () => {
   );
 };
 
+// Estilos para la pantalla
 const styles = StyleSheet.create({
   container: {
     padding: 16,
     backgroundColor: '#f8fafc',
+  },
+  row: {
+    justifyContent: 'space-between',
+    marginBottom: 8,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -132,20 +145,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   card: {
-    marginBottom: 20,
+    width: imageSize,
     alignItems: 'center',
   },
- image: {
-  width: '30%',
-  aspectRatio: 1, // cuadrada
-  borderRadius: 2,
-  marginBottom: 2,
-  resizeMode: 'cover',
-},
-
+  image: {
+    width: imageSize,
+    height: imageSize,
+    borderRadius: 8,
+    marginBottom: 6,
+    resizeMode: 'cover',
+  },
   title: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '500',
     textAlign: 'center',
     color: '#1e293b',
   },
@@ -155,4 +167,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ImageLibraryScreen;
+export default ImageLibraryScreen; // Exporta el componente para su uso en navegación
