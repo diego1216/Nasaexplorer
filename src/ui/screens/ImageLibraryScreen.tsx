@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'; // Importa React y el hook useEffect
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,87 +10,78 @@ import {
   TextInput,
   Button,
   Dimensions,
-} from 'react-native'; // Importa componentes nativos de React Native
-import { useNavigation } from '@react-navigation/native'; // Hook de navegación
-import { useAppDispatch, useAppSelector } from '../../redux/store'; // Hooks tipados de Redux
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useAppDispatch, useAppSelector } from '../../redux/store';
 import {
-  fetchImages,     // Acción para obtener imágenes desde la API o caché
-  setQuery,        // Acción para establecer el texto de búsqueda
-  setPage,         // Acción para controlar la paginación
-} from '../../redux/slices/imageLibrarySlice'; // Acciones del slice de Image Library
-import type { StackNavigationProp } from '@react-navigation/stack'; // Tipado para navegación de pila
-import type { RootStackParamList } from '../../navigation/AppNavigator'; // Tipado de las rutas del stack
+  fetchImages,
+  setQuery,
+  setPage,
+} from '../../redux/slices/imageLibrarySlice';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import type { RootStackParamList } from '../../navigation/AppNavigator';
 
-// Calcula el tamaño de cada imagen según el ancho de pantalla
 const screenWidth = Dimensions.get('window').width;
 const imageSize = (screenWidth - 48) / 2;
 
 const ImageLibraryScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>(); // Hook para navegación
-  const dispatch = useAppDispatch(); // Hook para disparar acciones de Redux
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const dispatch = useAppDispatch();
 
-  // Obtiene el estado actual del slice imageLibrary
   const { images, loading, error, loadingMore, query, page, hasMore } = useAppSelector(
     (state) => state.imageLibrary
   );
 
-  // Efecto que se dispara cuando se cambia la página o el query
   useEffect(() => {
     dispatch(fetchImages());
   }, [dispatch, page, query]);
 
-  // Función para ejecutar búsqueda
   const handleSearch = () => {
     if (query.trim()) {
-      dispatch(setPage(1));       // Reinicia a la primera página
-      dispatch(fetchImages());    // Ejecuta la búsqueda
+      dispatch(setPage(1));
+      dispatch(fetchImages());
     }
   };
 
-  // Función para cargar más imágenes al llegar al final de la lista
   const handleLoadMore = () => {
     if (!loadingMore && hasMore) {
-      dispatch(setPage(page + 1)); // Avanza una página
+      dispatch(setPage(page + 1));
     }
   };
 
   return (
     <View style={{ flex: 1 }}>
-      {/* Barra de búsqueda */}
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar imágenes (ej: Mars, Earth, Saturn)"
           value={query}
           onChangeText={(text) => dispatch(setQuery(text))}
-          onSubmitEditing={handleSearch} // Ejecuta búsqueda al presionar Enter
+          onSubmitEditing={handleSearch}
         />
-        <Button title="Buscar" onPress={handleSearch} /> {/* Botón de búsqueda */}
+        <Button title="Buscar" onPress={handleSearch} />
       </View>
 
-      {/* Indicador de carga */}
       {loading && (
         <View style={styles.center}>
           <ActivityIndicator size="large" color="#0077ff" />
         </View>
       )}
 
-      {/* Muestra mensaje de error si lo hay */}
       {error && (
         <View style={styles.center}>
           <Text style={styles.error}>{error}</Text>
         </View>
       )}
 
-      {/* Lista de resultados */}
       <FlatList
-        data={images} // Datos a renderizar
-        keyExtractor={(_, index) => index.toString()} // Clave única por índice
-        numColumns={2} // Dos columnas por fila
-        contentContainerStyle={styles.container} // Estilo del contenido
-        columnWrapperStyle={styles.row} // Estilo de las filas
-        onEndReached={handleLoadMore} // Ejecuta cuando se alcanza el final del scroll
-        onEndReachedThreshold={0.7} // Umbral para anticipar la carga
+        data={images}
+        keyExtractor={(_, index) => index.toString()}
+        numColumns={2}
+        contentContainerStyle={styles.container}
+        columnWrapperStyle={styles.row}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.7}
         ListFooterComponent={
           loadingMore ? <ActivityIndicator size="small" color="#0077ff" /> : null
         }
@@ -114,7 +105,6 @@ const ImageLibraryScreen = () => {
   );
 };
 
-// Estilos para la pantalla
 const styles = StyleSheet.create({
   container: {
     padding: 16,
@@ -167,4 +157,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ImageLibraryScreen; // Exporta el componente para su uso en navegación
+export default ImageLibraryScreen;

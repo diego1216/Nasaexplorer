@@ -1,44 +1,38 @@
-import React from "react"; // Importa React para usar JSX y componentes funcionales
+import React from "react";
 import {
-  View,                    // Componente contenedor
-  Text,                    // Componente para mostrar texto
-  FlatList,                // Lista optimizada para scroll
-  ActivityIndicator,       // Indicador de carga
-  StyleSheet,              // Herramienta para crear estilos
+  View,
+  Text,
+  FlatList,
+  ActivityIndicator,
+  StyleSheet,
 } from "react-native";
-import { useDonkiViewModel } from "../../presentation/viewmodels/useDonkiViewModel"; // Importa el ViewModel para manejar lógica de negocio y estado
-import ZoomInView from "../components/ZoomInView"; // Componente animado para mostrar el contenido con efecto de entrada
+import { useDonkiViewModel } from "../../presentation/viewmodels/useDonkiViewModel";
+import ZoomInView from "../components/ZoomInView";
 
-// Componente funcional que representa la pantalla de eventos DONKI (CME)
 const DonkiScreen = () => {
-  // Obtiene datos, estado de carga y error desde el ViewModel con fechas definidas
+  // Redux conectado + lógica offline
   const { events, loading, error } = useDonkiViewModel("2024-01-01", "2024-12-31");
 
   return (
-    // Aplica animación de entrada al contenedor principal
     <ZoomInView style={styles.container}>
       <Text style={styles.title}>Eventos CME (DONKI)</Text>
 
       {loading ? (
-        // Muestra spinner si está cargando
         <ActivityIndicator size="large" color="#0077ff" />
       ) : error ? (
-        // Muestra mensaje de error si lo hay
         <Text style={styles.error}>{error}</Text>
       ) : (
-        // Si hay datos, renderiza la lista
         <FlatList
-          data={events} // Lista de eventos
-          keyExtractor={(item, index) => `${item.activityID}-${index}`} // Clave única por elemento
+          data={events}
+          keyExtractor={(item, index) => `${item.activityID}-${index}`}
           renderItem={({ item }) => (
-            // Renderiza cada evento como tarjeta
             <View style={styles.item}>
               <Text style={styles.text}>ID: {item.activityID}</Text>
               <Text style={styles.text}>
-                Fecha: {item.startTime?.split("T")[0]} {/* Extrae solo la fecha sin la hora */}
+                Fecha: {item.startTime?.split("T")[0]}
               </Text>
               <Text style={styles.text}>
-                Velocidad: {item?.cmeAnalyses?.[0]?.speed ?? "N/A"} km/s {/* Velocidad o valor por defecto */}
+                Velocidad: {item?.cmeAnalyses?.[0]?.speed ?? "N/A"} km/s
               </Text>
             </View>
           )}
@@ -48,34 +42,32 @@ const DonkiScreen = () => {
   );
 };
 
-// Estilos para la pantalla
 const styles = StyleSheet.create({
   container: {
-    padding: 16,                 // Espaciado interno
-    flex: 1,                     // Ocupa toda la pantalla
-    backgroundColor: "#f0f9ff", // Fondo claro azul
+    padding: 16,
+    flex: 1,
+    backgroundColor: "#f0f9ff",
   },
   title: {
-    fontSize: 22,               // Tamaño del título
-    fontWeight: "bold",         // Negrita
-    marginBottom: 12,           // Separación inferior
-    color: "#1e293b",           // Color oscuro azulado
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 12,
+    color: "#1e293b",
   },
   item: {
-    backgroundColor: "#fff",    // Fondo blanco para cada tarjeta
-    padding: 12,                // Espaciado interno
-    marginBottom: 10,           // Separación entre tarjetas
-    borderRadius: 8,            // Bordes redondeados
-    elevation: 2,               // Sombra en Android
+    backgroundColor: "#fff",
+    padding: 12,
+    marginBottom: 10,
+    borderRadius: 8,
+    elevation: 2,
   },
   text: {
-    fontSize: 14,               // Tamaño del texto
-    color: "#1e293b",           // Color del texto
+    fontSize: 14,
+    color: "#1e293b",
   },
   error: {
-    color: "red",               // Color rojo para errores
+    color: "red",
   },
 });
 
-// Exporta el componente para ser usado en navegación u otras partes de la app
 export default DonkiScreen;

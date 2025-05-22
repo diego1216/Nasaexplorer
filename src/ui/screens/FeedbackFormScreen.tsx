@@ -1,4 +1,4 @@
-import React from 'react'; // Importa React para usar JSX y componentes funcionales
+import React from 'react';
 import {
   View,
   Text,
@@ -6,51 +6,46 @@ import {
   Button,
   StyleSheet,
   ScrollView,
-} from 'react-native'; // Importa componentes nativos de React Native
-import { useForm, Controller, useFieldArray } from 'react-hook-form'; // Importa hooks de react-hook-form para manejo de formularios
-import { useNavigation } from '@react-navigation/native'; // Hook para navegación dentro del stack
-import type { DrawerNavigationProp } from '@react-navigation/drawer'; // Tipado para navegación tipo Drawer
-import type { DrawerParamList } from '../../navigation/DrawerNavigator'; // Importa el tipo que define las rutas del Drawer
-import ZoomInView from '../components/ZoomInView'; // Componente animado para entrada con efecto de zoom
+} from 'react-native';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import { useNavigation } from '@react-navigation/native';
+import type { DrawerNavigationProp } from '@react-navigation/drawer'; 
+import type { DrawerParamList } from '../../navigation/DrawerNavigator'; 
+import ZoomInView from '../components/ZoomInView';
 
-// Define la estructura de datos que manejará el formulario
 type FeedbackForm = {
-  name: string; // Campo de nombre
-  email: string; // Campo de correo electrónico
-  feedbacks: { comment: string }[]; // Arreglo dinámico de comentarios
+  name: string;
+  email: string;
+  feedbacks: { comment: string }[];
 };
 
 const FeedbackFormScreen = () => {
-  // Hook de navegación tipado específicamente para el drawer y la pantalla "Formulario"
-  const navigation = useNavigation<DrawerNavigationProp<DrawerParamList, 'Formulario'>>();
+  const navigation = useNavigation<DrawerNavigationProp<DrawerParamList, 'Formulario'>>(); 
 
-  // Hook principal del formulario, con valores por defecto definidos
   const {
-    control, // Objeto de control para inputs
-    handleSubmit, // Función para manejar el envío del formulario
-    formState: { errors }, // Acceso a errores de validación
+    control,
+    handleSubmit,
+    formState: { errors },
   } = useForm<FeedbackForm>({
     defaultValues: {
       name: '',
       email: '',
-      feedbacks: [{ comment: '' }], // Inicia con un comentario vacío
+      feedbacks: [{ comment: '' }],
     },
   });
 
-  // Hook para manejar campos dinámicos del array "feedbacks"
   const { fields, append, remove } = useFieldArray({
-    control, // Vincula con el control del formulario
-    name: 'feedbacks', // Nombre del campo a controlar como arreglo
+    control,
+    name: 'feedbacks',
   });
 
-  // Función que se ejecuta al enviar el formulario
   const onSubmit = (data: FeedbackForm) => {
-    console.log('Datos del formulario:', data); // Muestra los datos en consola
-    navigation.navigate('Apod'); // Redirige a la pantalla "Apod"
+    console.log('Datos del formulario:', data);
+    navigation.navigate('Apod'); 
   };
 
   return (
-    <ZoomInView style={styles.container}> {/* Contenedor principal animado */}
+    <ZoomInView style={styles.container}>
       <ScrollView contentContainerStyle={{ paddingBottom: 30 }}>
         <Text style={styles.label}>Nombre</Text>
         <Controller
@@ -114,7 +109,6 @@ const FeedbackFormScreen = () => {
   );
 };
 
-// Estilos de la pantalla
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -141,5 +135,4 @@ const styles = StyleSheet.create({
   },
 });
 
-// Exporta el componente para usarlo en el sistema de navegación
 export default FeedbackFormScreen;
